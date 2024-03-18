@@ -8,4 +8,4 @@ port=3000
 az group create --name $resourceGroup --location northeurope
 
 # Deploy ARM template
-az deployment group create --resource-group $resourceGroup --template-file arm-deploy.json --parameters adminUser=azureuser password=hejloggain123! customData=@app-init.sh customData=@reverse-proxy-init.sh 
+az deployment group create --resource-group $resourceGroup --template-file arm-deploy.json --parameters adminUsername=azureuser password=hejloggain123! appCustomData=@app-init.sh reverseProxyCustomData=@reverse-proxy-init.sh 

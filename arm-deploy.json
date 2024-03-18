@@ -71,46 +71,43 @@
             "tags":{},
             "properties": {
                 "securityRules": [
-                    // SSH till Bastion
-                    {
-                        "name": "SSHonBastion",
+                 {
+                     "name": "SSHonBastion",
                         "properties": {
-                            "description": "Allow SSH to BastionASG",
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "22",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationApplicationSecurityGroups": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]"
-                                }
-                            ],
-                            "access": "Allow",
-                            "priority": 300,
-                            "direction": "Inbound"
+                        "description": "Allow SSH to BastionASG",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "22",
+                        "sourceAddressPrefix": "*",
+                        "destinationApplicationSecurityGroups": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]"
+                            }
+                        ],
+                        "access": "Allow",
+                        "priority": 300,
+                        "direction": "Inbound"
                         }
                     },
                     // HTTP till ReverseProxy
                     {
                         "name": "HTTPonProxy",
                         "properties": {
-                            "description": "Allow HTTP to ReverseProxyASG",
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "80",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationApplicationSecurityGroups": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
-                                }
-                            ],
-                            "access": "Allow",
-                            "priority": 310,
-                            "direction": "Inbound"
+                        "description": "Allow HTTP to ReverseProxyASG",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "80",
+                        "sourceAddressPrefix": "*",
+                        "destinationApplicationSecurityGroups": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
+                            }
+                        ],
+                        "access": "Allow",
+                        "priority": 310,
+                        "direction": "Inbound"
                         }
-                    },
+            },
                     // Port 3000 till App
                     {
                         "name": "3000onApp",
@@ -120,7 +117,6 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "3000",
                             "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
                             "destinationApplicationSecurityGroups": [
                                 {
                                     "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
