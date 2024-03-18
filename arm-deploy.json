@@ -71,6 +71,7 @@
             "tags":{},
             "properties": {
                 "securityRules": [
+                    // SSH till Bastion
                  {
                      "name": "SSHonBastion",
                         "properties": {
@@ -89,7 +90,7 @@
                         "direction": "Inbound"
                         }
                     },
-                    // HTTP till ReverseProxy
+                    // Internet till ReverseProxy
                     {
                         "name": "HTTPonProxy",
                         "properties": {
