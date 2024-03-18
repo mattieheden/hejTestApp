@@ -8,10 +8,22 @@
                 "description": "Password for the Virtual Machine."
             }
         },
-        "customData": {
+        "appCustomData": {
             "type": "string",
             "metadata": {
                 "description": "Custom data to be used for cloud-init."
+            }
+        },
+        "reverseProxyCustomData": {
+            "type": "string",
+            "metadata": {
+                "description": "Custom data to be used for cloud-init."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the Virtual Machine."
             }
         }
     },
@@ -19,7 +31,7 @@
     "variables": {},
     "resources": [
         {
-            "name": "ubuntuVM1-PublicIP",
+            "name": "hejApp-PublicIP",
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
@@ -31,7 +43,7 @@
             }
         },
         {
-            "name": "ubuntuVM1-nsg",
+            "name": "hejApp-nsg",
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
@@ -69,15 +81,15 @@
             }
         },
         {
-            "name": "ubuntuVM1-VirtualNetwork",
+            "name": "hejApp-VirtualNetwork",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', 'ubuntuVM1-nsg')]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'hejApp-nsg')]"
             ],
             "tags": {
-                "displayName": "ubuntuVM1-VirtualNetwork"
+                "displayName": "hejApp-VirtualNetwork"
             },
             "properties": {
                 "addressSpace": {
@@ -87,11 +99,11 @@
                 },
                 "subnets": [
                     {
-                        "name": "ubuntuVM1-VirtualNetwork-Subnet",
+                        "name": "hejApp-VirtualNetwork-Subnet",
                         "properties": {
                             "addressPrefix": "10.0.0.0/24",
                             "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'ubuntuVM1-nsg')]"
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'hejApp-nsg')]"
                             }
                         }
                     }
@@ -99,16 +111,16 @@
             }
         },
         {
-            "name": "ubuntuVM1-NetworkInterface",
+            "name": "hejApp-NetworkInterface",
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'ubuntuVM1-PublicIP')]",
-                "[resourceId('Microsoft.Network/virtualNetworks', 'ubuntuVM1-VirtualNetwork')]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-PublicIP')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]"
             ],
             "tags": {
-                "displayName": "ubuntuVM1-NetworkInterface"
+                "displayName": "hejApp-NetworkInterface"
             },
             "properties": {
                 "ipConfigurations": [
@@ -117,10 +129,10 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'ubuntuVM1-PublicIP')]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-PublicIP')]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ubuntuVM1-VirtualNetwork', 'ubuntuVM1-VirtualNetwork-Subnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'hejApp-VirtualNetwork', 'hejApp-VirtualNetwork-Subnet')]"
                             }
                         }
                     }
@@ -128,25 +140,25 @@
             }
         },
         {
-            "name": "ubuntuVM1",
+            "name": "hejApp",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2023-03-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', 'ubuntuVM1-NetworkInterface')]"
+                "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-NetworkInterface')]"
             ],
             "tags": {
-                "displayName": "ubuntuVM1"
+                "displayName": "hejApp"
             },
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "Standard_B1s"
                 },
                 "osProfile": {
-                    "computerName": "ubuntuVM1",
-                    "adminUsername": "azureuser",
+                    "computerName": "hejApp",
+                    "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('password')]",
-                    "customData": "[base64(parameters('customData'))]"
+                    "appCustomData": "[base64(parameters('appCustomData'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -156,7 +168,7 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "name": "ubuntuVM1-OSDisk",
+                        "name": "hejApp-OSDisk",
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
                     }
@@ -164,7 +176,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'ubuntuVM1-NetworkInterface')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-NetworkInterface')]"
                         }
                     ]
                 }
