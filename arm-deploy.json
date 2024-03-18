@@ -315,7 +315,7 @@
         {
             "name": "hejApp-BastionVM",
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2023-04-01",
+            "apiVersion": "2023-03-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-BastionNIC')]",
@@ -359,7 +359,7 @@
         {
             "name": "hejApp-ReverseProxyVM",
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2023-04-01",
+            "apiVersion": "2023-03-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-ReverseProxyNIC')]",
@@ -376,7 +376,7 @@
                     "computerName": "hejApp-ReverseProxyVM",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('password')]",
-                    "appCustomData": "[base64(parameters('reverseProxyCustomData'))]"
+                    "customData": "[base64(parameters('reverseProxyCustomData'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -404,7 +404,7 @@
         {
             "name": "hejApp-AppVM",
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2023-04-01",
+            "apiVersion": "2023-03-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-AppNIC')]",
@@ -421,7 +421,7 @@
                     "computerName": "hejApp-AppVM",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('password')]",
-                    "appCustomData": "[base64(parameters('appCustomData'))]"
+                    "customData": "[base64(parameters('appCustomData'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
