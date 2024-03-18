@@ -90,7 +90,7 @@
                         "direction": "Inbound"
                         }
                     },
-                    // SSH Bastion till ReverseProxy
+                    // SSH från Bastion till ReverseProxy
                     {
                         "name": "SSHfromBastiontoReverseProxy",
                         "properties": {
@@ -113,8 +113,6 @@
                         "direction": "Inbound"
                         }
                     },
-
-
                     // Internet till ReverseProxy
                     {
                         "name": "HTTPonProxy",
@@ -134,7 +132,7 @@
                         "direction": "Inbound"
                         }
             },
-                    // Port 3000 till App
+                    // Port 3000 på HTTP till App från reverse Proxy
                     {
                         "name": "3000onApp",
                         "properties": {
@@ -142,7 +140,11 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "3000",
-                            "sourceAddressPrefix": "*",
+                            "sourceApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
+                                }
+                            ],
                             "destinationApplicationSecurityGroups": [
                                 {
                                     "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
