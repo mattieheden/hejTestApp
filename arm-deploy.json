@@ -71,10 +71,11 @@
             "tags":{},
             "properties": {
                 "securityRules": [
+                    // SSH till Bastion
                     {
-                        "name": "SSH",
+                        "name": "SSHonBastion",
                         "properties": {
-                            "description": "Allow SSH",
+                            "description": "Allow SSH to BastionASG",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
@@ -89,61 +90,52 @@
                             "priority": 300,
                             "direction": "Inbound"
                         }
-                    }
-                ]
-
-            }
-
-        {
-            "name": "hejApp-PublicIP",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2023-04-01",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "PublicIPAddress"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic"
-            }
-        },
-        {
-            "name": "hejApp-nsg",
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2023-04-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "SSH",
-                        "properties": {
-                            "description": "description",
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "22",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 100,
-                            "direction": "Inbound"
-                        }
                     },
+                    // HTTP till ReverseProxy
                     {
-                        "name": "HTTP",
+                        "name": "HTTPonProxy",
                         "properties": {
-                            "description": "description",
+                            "description": "Allow HTTP to ReverseProxyASG",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "80",
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
+                            "destinationApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
+                                }
+                            ],
                             "access": "Allow",
-                            "priority": 900,
+                            "priority": 310,
+                            "direction": "Inbound"
+                        }
+                    },
+                    // Port 3000 till App
+                    {
+                        "name": "3000onApp",
+                        "properties": {
+                            "description": "Allow 3000 to AppASG",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3000",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
+                                }
+                            ],
+                            "access": "Allow",
+                            "priority": 320,
                             "direction": "Inbound"
                         }
                     }
                 ]
+
             }
         },
+        // VirtualNetwork
         {
             "name": "hejApp-VirtualNetwork",
             "type": "Microsoft.Network/virtualNetworks",
@@ -174,17 +166,58 @@
                 ]
             }
         },
+        // BastionPublicIP
         {
-            "name": "hejApp-NetworkInterface",
+            "name": "hejApp-BastionPublicIP",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "hejApp-BastionPublicIP"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            } 
+        },
+        // ReverseProxyPublicIP
+        {
+            "name": "hejApp-ReverseProxyPublicIP",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "hejApp-ReverseProxyPublicIP"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        // AppPublicIP TILLFÄLLIG TA BORT MIG! 
+        {
+            "name": "hejApp-AppPublicIP",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "hejApp-AppPublicIP"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        // BastionNIC
+        {
+            "name": "hejApp-BastionNIC",
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-PublicIP')]",
-                "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-BastionPublicIP')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]",
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]"
             ],
             "tags": {
-                "displayName": "hejApp-NetworkInterface"
+                "displayName": "hejApp-BastionNIC"
             },
             "properties": {
                 "ipConfigurations": [
@@ -193,33 +226,203 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-PublicIP')]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-BastionPublicIP')]"
                             },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'hejApp-VirtualNetwork', 'hejApp-VirtualNetwork-Subnet')]"
-                            }
+                            },
+                            "applicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]"
+                                }
+                            ]
                         }
                     }
                 ]
             }
         },
+        // ReverseProxyNIC
         {
-            "name": "hejApp",
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2023-03-01",
+            "name": "hejApp-ReverseProxyNIC",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-NetworkInterface')]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-ReverseProxyPublicIP')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]",
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
             ],
             "tags": {
-                "displayName": "hejApp"
+                "displayName": "hejApp-ReverseProxyNIC"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig2",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-ReverseProxyPublicIP')]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'hejApp-VirtualNetwork', 'hejApp-VirtualNetwork-Subnet')]"
+                            },
+                            "applicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        // AppNIC
+        {
+            "name": "hejApp-AppNIC",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-AppPublicIP')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]",
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
+            ],
+            "tags": {
+                "displayName": "hejApp-AppNIC"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig3",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "10.0.0.7",
+                            // Ta bort public sen! 
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-AppPublicIP')]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'hejApp-VirtualNetwork', 'hejApp-VirtualNetwork-Subnet')]"
+                            },
+                            "applicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        // BastionVM
+        {
+            "name": "hejApp-BastionVM",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-BastionNIC')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]"
+            ],
+            "tags": {
+                "displayName": "hejApp-BastionVM"
             },
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "Standard_B1s"
                 },
                 "osProfile": {
-                    "computerName": "hejApp",
+                    "computerName": "hejApp-BastionVM",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('password')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-jammy",
+                        "sku": "22_04-lts-gen2",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "hejApp-BastionVM-OSDisk",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-BastionNIC')]"
+                        }
+                    ]
+                }
+            }
+        },
+        // ReverseProxyVM
+        {
+            "name": "hejApp-ReverseProxyVM",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-ReverseProxyNIC')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]"
+            ],
+            "tags": {
+                "displayName": "hejApp-ReverseProxyVM"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "osProfile": {
+                    "computerName": "hejApp-ReverseProxyVM",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('password')]",
+                    "appCustomData": "[base64(parameters('reverseProxyCustomData'))]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-jammy",
+                        "sku": "22_04-lts-gen2",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "hejApp-ReverseProxyVM-OSDisk",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-ReverseProxyNIC')]"
+                        }
+                    ]
+                }
+            }
+        },
+        // AppVM
+        {
+            "name": "hejApp-AppVM",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-AppNIC')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]"
+            ],
+            "tags": {
+                "displayName": "hejApp-AppVM"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "osProfile": {
+                    "computerName": "hejApp-AppVM",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('password')]",
                     "appCustomData": "[base64(parameters('appCustomData'))]"
@@ -232,7 +435,7 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "name": "hejApp-OSDisk",
+                        "name": "hejApp-AppVM-OSDisk",
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
                     }
@@ -240,7 +443,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-NetworkInterface')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'hejApp-AppNIC')]"
                         }
                     ]
                 }
