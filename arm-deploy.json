@@ -30,6 +30,70 @@
     "functions": [],
     "variables": {},
     "resources": [
+        // BastionASG
+        {
+            "name": "hejApp-BastionASG",
+            "type": "Microsoft.Network/applicationSecurityGroups",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags":{},
+            "properties":{}
+        },
+        // ReverseProxyASG
+        {
+            "name": "hejApp-ReverseProxyASG",
+            "type": "Microsoft.Network/applicationSecurityGroups",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags":{},
+            "properties":{}
+        },
+        // AppASG
+        {
+            "name": "hejApp-AppASG",
+            "type": "Microsoft.Network/applicationSecurityGroups",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags":{},
+            "properties":{}
+        },
+        // NSG
+        {
+            "name": "hejApp-nsg",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]",
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]",
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
+            ],
+            "tags":{},
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH",
+                        "properties": {
+                            "description": "Allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationApplicationSecurityGroups": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]"
+                                }
+                            ],
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+
+            }
+
         {
             "name": "hejApp-PublicIP",
             "type": "Microsoft.Network/publicIPAddresses",
