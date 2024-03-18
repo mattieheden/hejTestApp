@@ -2,31 +2,10 @@
 
 # Changeable variables
 resourceGroup=hejTestRG
-bastionHostName=hejBastionHost
-reverseProxyName=hejReverseProxy1
-appVMName=hejAppVM1
 port=3000
 
 # Create a new resource group
 az group create --name $resourceGroup --location northeurope
 
-# Create a new Bastion host VM
-az vm create --resource-group $resourceGroup --name $bastionHostName --image Ubuntu2204 --size Standard_B1s --generate-ssh-keys --admin-username azureuser 
-
-# Create a new Reverse proxy VM
-az vm create --resource-group $resourceGroup --name $reverseProxyName --image Ubuntu2204 --size Standard_B1s --generate-ssh-keys --admin-username azureuser --custom-data @reverse-proxi-init.sh
-
-# Create a new App VM
-az vm create --resource-group $resourceGroup --name $appVMName --image Ubuntu2204 --size Standard_B1s --generate-ssh-keys --admin-username azureuser --custom-data @app-vm-init.shS
-
-# Open port 3000 on the App VM
-az vm open-port --port $port --resource-group $resourceGroup --name $appVMName --priority 1001
-
-# Create a new Network Security Group (NSG)
-az network nsg create --name hejNSG --resource-group $resourceGroup
-
-# Create a new NSG rule to allow SSH traffic from the Bastion host to the App VM
-az network nsg rule create --name AllowSSHFromBastionHost --nsg-name hejNSG --resource-group $resourceGroup \
-                           --protocol Tcp --priority 1000 --source-address-prefixes 10.0.0.0/24 \
-                           --destination-address-prefixes 10.0.1.0/24 --destination-port-ranges 22 \
-                           --access Allow
+# Deploy ARM template
+az deployment group create --resource-group $resourceGroup --template-file arm-deploy.json --parameters adminUser=azureuser password=hejloggain123! customData=@app-init.sh customData=@reverse-proxy-init.sh 
