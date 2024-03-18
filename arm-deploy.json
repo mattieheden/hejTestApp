@@ -70,7 +70,7 @@
             ],
             "tags":{},
             "properties": {
-                "securityRules": [
+                "securityRules": [  // KOLLA PÅ DESSA REGLER SENARE, de rör ihop det nu. 
                     // SSH till Bastion
                  {
                      "name": "SSHonBastion",
