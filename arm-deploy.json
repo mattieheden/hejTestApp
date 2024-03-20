@@ -90,7 +90,8 @@
                         "direction": "Inbound"
                         }
                     },
-                    // SSH från Bastion till ReverseProxy & Appserver
+                    
+                    // SSH från Bastion till ReverseProxy
                     {
                         "name": "SSHfromBastiontoReverseProxy",
                         "properties": {
@@ -106,13 +107,33 @@
                         "destinationApplicationSecurityGroups": [
                             {
                                 "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
-                            },
+                            }
+                        ],
+                        "access": "Allow",
+                        "priority": 305,
+                        "direction": "Inbound"
+                        }
+                    },
+                    // SSH from Bastion to App
+                    {
+                        "name": "SSHfromBastiontoApp",
+                        "properties": {
+                        "description": "Allow SSH from Bastion to AppASG",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "22",
+                        "sourceApplicationSecurityGroups": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]"
+                            }
+                        ],
+                        "destinationApplicationSecurityGroups": [
                             {
                                 "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
                             }
                         ],
                         "access": "Allow",
-                        "priority": 305,
+                        "priority": 306,
                         "direction": "Inbound"
                         }
                     },
@@ -169,7 +190,10 @@
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', 'hejApp-nsg')]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'hejApp-nsg')]",
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]",
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]",
+                "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
             ],
             "tags": {
                 "displayName": "hejApp-VirtualNetwork"
@@ -275,8 +299,8 @@
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-ReverseProxyPublicIP')]",
                 "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-ReverseProxyPublicIP')]",
                 "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
             ],
             "tags": {
@@ -311,8 +335,8 @@
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-AppPublicIP')]",
                 "[resourceId('Microsoft.Network/virtualNetworks', 'hejApp-VirtualNetwork')]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-AppPublicIP')]",
                 "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
             ],
             "tags": {
