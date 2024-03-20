@@ -1,39 +1,60 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+# This workflow will build the hejTestApp project
 
-name: .NET
+name: hejTestApp
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+    - "master"
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
+
+    - name: Install .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
-    - name: Build
-      run: dotnet build
-    - name: Publish
-      run: dotnet publish -o ${{env.DOTNET_ROOT}}/publish
-    - name: Upload to Artifact Store
-      uses: actions/upload-artifact@v3
+        dotnet-version: '8.0.x'
+
+    - name: Check out this repo
+      uses: actions/checkout@v4
+
+    - name: Restore dependencies (install Nuget packages)
+      run: dotnet restore
+
+    - name: Build and publish the app
+      run: |
+        dotnet build --no-restore
+        dotnet publish -c Release -o ./publish        
+
+    - name: Upload app artifacts to Github
+      uses: actions/upload-artifact@v4
       with:
-        name: my-artifacts
-        path: ${{env.DOTNET_ROOT}}/publish
-    
+        name: app-artifacts
+        path: ./publish
+
   deploy:
     runs-on: self-hosted
     needs: build
+
     steps:
-      - name: Download artifacts to VM
-        uses: actions/download-artifact@v3
-        with:
-          name: my-artifacts
+    - name: Download the artifacts from Github (from the build job)
+      uses: actions/download-artifact@v4
+      with:
+        name: app-artifacts
+
+    - name: Stop the application service
+      run: |
+        sudo systemctl stop hejTestApp.service        
+
+    - name: Deploy the the application
+      run: |
+        sudo rm -Rf /opt/hejTestApp || true
+        sudo cp -r /home/azureuser/actions-runner/_work/hejTestApp/hejTestApp/ /opt/hejTestApp        
+
+    - name: Start the application service
+      run: |
+        sudo systemctl start hejTestApp.service      
 
