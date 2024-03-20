@@ -20,4 +20,20 @@ jobs:
         dotnet-version: 8.0.x
     - name: Build
       run: dotnet build
+    - name: Publish
+      run: dotnet publish -o ${{env.DOTNET_ROOT}}/publish
+    - name: Upload to Artifact Store
+      uses: actions/upload-artifact@v3
+      with:
+        name: my-artifacts
+        path: ${{env.DOTNET_ROOT}}/publish
+    
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Download artifacts to VM
+        uses: actions/download-artifact@v3
+        with:
+          name: my-artifacts
 

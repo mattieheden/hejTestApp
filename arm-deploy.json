@@ -79,7 +79,7 @@
                         "protocol": "Tcp",
                         "sourcePortRange": "*",
                         "destinationPortRange": "22",
-                        "sourceAddressPrefix": "*",
+                        "sourceAddressPrefix": "Internet",
                         "destinationApplicationSecurityGroups": [
                             {
                                 "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-BastionASG')]"
@@ -90,7 +90,7 @@
                         "direction": "Inbound"
                         }
                     },
-                    // SSH från Bastion till ReverseProxy
+                    // SSH från Bastion till ReverseProxy & Appserver
                     {
                         "name": "SSHfromBastiontoReverseProxy",
                         "properties": {
@@ -106,6 +106,9 @@
                         "destinationApplicationSecurityGroups": [
                             {
                                 "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"
+                            },
+                            {
+                                "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-AppASG')]"
                             }
                         ],
                         "access": "Allow",
@@ -113,7 +116,7 @@
                         "direction": "Inbound"
                         }
                     },
-                    // Internet till ReverseProxy
+                    // Port 80 till ReverseProxy
                     {
                         "name": "HTTPonProxy",
                         "properties": {
@@ -121,7 +124,7 @@
                         "protocol": "Tcp",
                         "sourcePortRange": "*",
                         "destinationPortRange": "80",
-                        "sourceAddressPrefix": "*",
+                        "sourceAddressPrefix": "Internet",
                         "destinationApplicationSecurityGroups": [
                             {
                                 "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'hejApp-ReverseProxyASG')]"

@@ -32,7 +32,9 @@ RestartSec=10
 KillSignal=SIGINT
 SyslogIdentifier=$appName
 User=www-data
-EnvironmentFile=/etc/default/$appName
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment="ASPNETCORE_URLS=http://*:3000"
 
 [Install]
 WantedBy=multi-user.target
