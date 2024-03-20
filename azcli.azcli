@@ -10,4 +10,4 @@ initApp=hejapp-init.sh
 az group create --name $resourceGroup --location northeurope
 
 # Deploy ARM template
-az deployment group create --resource-group $resourceGroup --template-file arm-deploy.json --parameters adminUsername=azureuser password=hejloggain123! appCustomData=@$initApp reverseProxyCustomData=@$initProxy
+az deployment group create --resource-group $resourceGroup --template-file arm-deploy.json --parameters adminUsername=azureuser password=hejloggain123! appCustomData=@$initApp reverseProxyCustomData=@$initProxy sshKey="$(cat ~/.ssh/id_rsa.pub)"

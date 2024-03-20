@@ -25,6 +25,12 @@
             "metadata": {
                 "description": "Username for the Virtual Machine."
             }
+        },
+        "sshKey": {
+            "type": "string",
+            "metadata": {
+                "description": "SSH Key for the Virtual Machine."
+            }
         }
     },
     "functions": [],
@@ -386,8 +392,19 @@
                 "osProfile": {
                     "computerName": "hejApp-BastionVM",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('password')]"
-                },
+                    "adminPassword": "[parameters('password')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                            "ssh": {
+                            "publicKeys": [
+                        {
+                            "path": "/home/[parameters('adminUsername')]/.ssh/authorized_keys",
+                            "keyData": "[parameters('sshKey')]"
+                        }
+                    ]
+                }
+            }
+        },
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "Canonical",
@@ -431,7 +448,18 @@
                     "computerName": "hejApp-ReverseProxyVM",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('password')]",
-                    "customData": "[base64(parameters('reverseProxyCustomData'))]"
+                    "customData": "[base64(parameters('reverseProxyCustomData'))]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/[parameters('adminUsername')]/.ssh/authorized_keys",
+                                    "keyData": "[parameters('sshKey')]"
+                                }
+                            ]
+                        }
+                    }
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -476,7 +504,18 @@
                     "computerName": "hejApp-AppVM",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('password')]",
-                    "customData": "[base64(parameters('appCustomData'))]"
+                    "customData": "[base64(parameters('appCustomData'))]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/[parameters('adminUsername')]/.ssh/authorized_keys",
+                                    "keyData": "[parameters('sshKey')]"
+                                }
+                            ]
+                        }
+                    }
                 },
                 "storageProfile": {
                     "imageReference": {
