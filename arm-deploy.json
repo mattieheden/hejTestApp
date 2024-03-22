@@ -76,7 +76,7 @@
             ],
             "tags":{},
             "properties": {
-                "securityRules": [  // KOLLA PÅ DESSA REGLER SENARE, de rör ihop det nu. 
+                "securityRules": [ 
                     // SSH till Bastion
                  {
                      "name": "SSHonBastion",
@@ -249,19 +249,6 @@
                 "publicIPAllocationMethod": "Dynamic"
             }
         },
-        // AppPublicIP TILLFÄLLIG TA BORT MIG! 
-        {
-            "name": "hejApp-AppPublicIP",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2023-04-01",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "hejApp-AppPublicIP"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic"
-            }
-        },
         // BastionNIC
         {
             "name": "hejApp-BastionNIC",
@@ -356,9 +343,6 @@
                             "privateIPAllocationMethod": "Static",
                             "privateIPAddress": "10.0.0.7",
                             // Ta bort public sen! 
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-AppPublicIP')]"
-                            },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'hejApp-VirtualNetwork', 'hejApp-VirtualNetwork-Subnet')]"
                             },
