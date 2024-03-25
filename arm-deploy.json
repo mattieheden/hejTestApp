@@ -249,6 +249,18 @@
                 "publicIPAllocationMethod": "Dynamic"
             }
         },
+        {
+            "name": "hejApp-AppPublicIP",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "hejApp-AppPublicIP"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
         // BastionNIC
         {
             "name": "hejApp-BastionNIC",
@@ -342,7 +354,10 @@
                         "properties": {
                             "privateIPAllocationMethod": "Static",
                             "privateIPAddress": "10.0.0.7",
-                            // Ta bort public sen! 
+                            // Ta bort public sen!
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'hejApp-AppPublicIP')]"
+                            }, 
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'hejApp-VirtualNetwork', 'hejApp-VirtualNetwork-Subnet')]"
                             },
